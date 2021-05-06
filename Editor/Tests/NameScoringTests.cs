@@ -6,11 +6,24 @@ namespace AutoAssigner.Tests
     {
         [TestCase("_comboActivatedSFX", "ComboStartSFX", "BackButtonSFX")]
         [TestCase("_comboSFX ", "CombosSFX", "SFX")]
-        public void NameScoringTestsSimplePasses(string name, string winner, string loser)
+        [TestCase("prefPrefab6", "Prefab 6", "Prefab 1")]
+        [TestCase("prefPrefab6", "Prefab (6)", "Prefab 1")]
+        [TestCase("prefPrefab6", "pr", "ar")]
+        public void Simple(string name, string winner, string loser)
         {
-            int winnerScore = AutoAssignProcessor<NameScoringTests>.GetScore(name, winner);
-            int loserScore = AutoAssignProcessor<NameScoringTests>.GetScore(name, loser);
+            int winnerScore = NameProcessor.GetScore(name, winner);
+            int loserScore = NameProcessor.GetScore(name, loser);
             Assert.Greater(winnerScore, loserScore);
+        }
+
+        [TestCase("_hello6field89", "_ hello 6 field 89")]
+        [TestCase("simpleName", "Simple Name")]
+        [TestCase("Name", "Name")]
+        [TestCase("888", "888")]
+        [TestCase("888hell", "888 hell")]
+        public void SplitPascalCase(string name, string expected)
+        {
+            Assert.AreEqual(expected, NameProcessor.SplitPascalCase(name));
         }
     }
 }
