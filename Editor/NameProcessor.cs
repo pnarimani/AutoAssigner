@@ -59,6 +59,9 @@ namespace AutoAssigner
 
             foreach (string namePart in nameParts)
             {
+                if (string.IsNullOrWhiteSpace(namePart))
+                    continue;
+                
                 if (Contains(target, namePart, CompareOptions.Ordinal))
                     score += 12;
                 if (Contains(target, namePart, CompareOptions.OrdinalIgnoreCase))
@@ -67,6 +70,9 @@ namespace AutoAssigner
 
             foreach (string targetPart in targetParts)
             {
+                if (string.IsNullOrWhiteSpace(targetPart))
+                    continue;
+                
                 if (Contains(name, targetPart, CompareOptions.Ordinal))
                     score += 12;
                 else if (Contains(name, targetPart, CompareOptions.OrdinalIgnoreCase))
@@ -105,10 +111,10 @@ namespace AutoAssigner
                         if (char.IsUpper(c) && !char.IsUpper(input[index - 1]))
                             stringBuilder.Append(' ');
 
-                        if (!char.IsLetter(c) && char.IsLetter(input[index - 1]))
+                        if (!char.IsLetter(c) && !char.IsWhiteSpace(c) && char.IsLetter(input[index - 1]))
                             stringBuilder.Append(' ');
                         
-                        if (char.IsLetter(c) && !char.IsLetter(input[index - 1]))
+                        if (char.IsLetter(c) && !char.IsLetter(input[index - 1]) && !char.IsWhiteSpace(input[index - 1]))
                             stringBuilder.Append(' ');
                         
                         stringBuilder.Append(c);

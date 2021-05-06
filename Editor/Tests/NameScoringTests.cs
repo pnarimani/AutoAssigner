@@ -9,6 +9,7 @@ namespace AutoAssigner.Tests
         [TestCase("prefPrefab6", "Prefab 6", "Prefab 1")]
         [TestCase("prefPrefab6", "Prefab (6)", "Prefab 1")]
         [TestCase("prefPrefab6", "pr", "ar")]
+        [TestCase("_shootParent", "ShootStick", "Image (1)")]
         public void Simple(string name, string winner, string loser)
         {
             int winnerScore = NameProcessor.GetScore(name, winner);
@@ -21,6 +22,7 @@ namespace AutoAssigner.Tests
         [TestCase("Name", "Name")]
         [TestCase("888", "888")]
         [TestCase("888hell", "888 hell")]
+        [TestCase("Image (1)", "Image (1)")]
         public void SplitPascalCase(string name, string expected)
         {
             Assert.AreEqual(expected, NameProcessor.SplitPascalCase(name));
