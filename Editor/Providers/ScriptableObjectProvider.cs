@@ -18,7 +18,12 @@ namespace AutoAssigner.Providers
 
         public static ScriptableObject GetOne(Type t, string targetName)
         {
-            string[] paths = AssetDatabase.FindAssets("t:" + t.Name).Select(AssetDatabase.GUIDToAssetPath).ToArray();
+            string[] paths = AssetDatabase.FindAssets("t:" + t.Name)
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToArray();
+
+            if (paths.Length == 0)
+                return null;
 
             string bestPath = NameProcessor.GetMatching(paths, targetName);
 

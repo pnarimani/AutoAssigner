@@ -14,6 +14,9 @@ namespace AutoAssigner.Providers
             
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
 
+            if (paths == null)
+                return null;
+
             List<GameObject> all = paths
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(asset => asset != null)
@@ -39,6 +42,9 @@ namespace AutoAssigner.Providers
             ValidateCache();
             
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
+            
+            if (paths == null)
+                return null;
 
             string bestPath = NameProcessor.GetMatching(paths, targetName);
 
@@ -51,9 +57,15 @@ namespace AutoAssigner.Providers
 
             List<Type> allTypes = PrefabCache.Instance.AllTypes;
 
+            if (allTypes.Count == 0)
+                return null;
+
             Type bestType = NameProcessor.GetMatching(allTypes, targetName);
 
             List<string> paths = PrefabCache.Instance.GetPrefabs(bestType);
+            
+            if (paths == null)
+                return null;
 
             string bestPath = NameProcessor.GetMatching(paths, targetName);
 
