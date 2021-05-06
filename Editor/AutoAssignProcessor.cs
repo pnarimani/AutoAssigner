@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace AutoAssigner
 {
     [ResolverPriority(-12.0)]
-    public class AutoAssignProcessor<T> : OdinPropertyProcessor<T>
+    public class AutoAssignProcessor<T> : OdinPropertyProcessor<T> where T : Object
     {
         public override void ProcessMemberProperties(List<InspectorPropertyInfo> memberInfos)
         {
