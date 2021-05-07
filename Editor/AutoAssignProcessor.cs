@@ -117,7 +117,7 @@ namespace AutoAssigner
 
                         if (children.Length != 0)
                         {
-                            property.objectReferenceValue = NameProcessor.GetMatching(children, targetName);
+                            (property.objectReferenceValue, _) = NameProcessor.GetMatching(children, targetName);
                             return;
                         }
                     }

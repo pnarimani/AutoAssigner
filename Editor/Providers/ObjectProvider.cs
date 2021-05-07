@@ -32,7 +32,7 @@ namespace AutoAssigner.Providers
             if (paths.Count == 0)
                 return null;
 
-            string bestPath = NameProcessor.GetMatching(paths, targetName);
+            (string bestPath, _) = NameProcessor.GetMatching(paths, targetName);
 
             return AssetDatabase.LoadAssetAtPath(bestPath, t);
         }

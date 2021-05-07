@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sirenix.OdinInspector;
 using Object = UnityEngine.Object;
 
 namespace AutoAssigner
@@ -13,40 +12,37 @@ namespace AutoAssigner
     {
         private const int MaxDistance = 5;
 
-        public static string GetMatching(IList<string> allPaths, string targetName)
+        public static (string path, int score) GetMatching(IList<string> allPaths, string targetName)
         {
             if (allPaths.Count == 0)
-                return null;
+                return (null, 0);
 
             return allPaths
                 .Select(s => (s, GetScore(Path.GetFileNameWithoutExtension(s), targetName)))
                 .OrderByDescending(t => t.Item2)
-                .First()
-                .Item1;
+                .First();
         }
 
-        public static Type GetMatching(IList<Type> allPaths, string targetName)
+        public static (Type type, int score) GetMatching(IList<Type> allPaths, string targetName)
         {
             if (allPaths.Count == 0)
-                return null;
+                return (null, 0);
 
             return allPaths
                 .Select(type => (type, GetScore(type.Name, targetName)))
                 .OrderByDescending(t => t.Item2)
-                .First()
-                .Item1;
+                .First();
         }
 
-        public static TO GetMatching<TO>(IList<TO> all, string targetName) where TO : Object
+        public static (TO item, int score) GetMatching<TO>(IList<TO> all, string targetName) where TO : Object
         {
             if (all.Count == 0)
-                return null;
+                return (null, 0);
 
             return all
                 .Select(s => (s, GetScore(s.name, targetName)))
                 .OrderByDescending(t => t.Item2)
-                .First()
-                .Item1;
+                .First();
         }
 
         public static void CutLowQualityPaths(List<string> paths, string targetName)

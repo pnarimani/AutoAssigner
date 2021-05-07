@@ -11,14 +11,14 @@ namespace AutoAssigner.Providers
         public static List<Component> GetAll(Type t, string targetName)
         {
             ValidateCache();
-            
+
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
 
             if (paths == null)
                 return null;
-            
+
             NameProcessor.CutLowQualityPaths(paths, targetName);
-            
+
             List<GameObject> all = paths
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(asset => asset != null)
@@ -42,34 +42,31 @@ namespace AutoAssigner.Providers
         public static Component GetOne(Type t, string targetName)
         {
             ValidateCache();
-            
+
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
-            
+
             if (paths == null)
                 return null;
 
-            string bestPath = NameProcessor.GetMatching(paths, targetName);
+            (string bestPath, _) = NameProcessor.GetMatching(paths, targetName);
 
             return AssetDatabase.LoadAssetAtPath<GameObject>(bestPath).GetComponent(t);
         }
-        
+
         public static GameObject GetOne(string targetName)
         {
             ValidateCache();
 
-            List<Type> allTypes = PrefabCache.Instance.AllTypes;
+            (Type bestType, int typeScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllTypes, targetName);
+            (string bestPath, int pathScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllPaths, targetName);
 
-            if (allTypes.Count == 0)
-                return null;
+            if (typeScore > pathScore)
+            {
+                List<string> paths = PrefabCache.Instance.GetPrefabs(bestType);
 
-            Type bestType = NameProcessor.GetMatching(allTypes, targetName);
-
-            List<string> paths = PrefabCache.Instance.GetPrefabs(bestType);
-            
-            if (paths == null)
-                return null;
-
-            string bestPath = NameProcessor.GetMatching(paths, targetName);
+                if (paths != null)
+                    (bestPath, _) = NameProcessor.GetMatching(paths, targetName);
+            }
 
             return AssetDatabase.LoadAssetAtPath<GameObject>(bestPath);
         }
@@ -80,14 +77,14 @@ namespace AutoAssigner.Providers
 
             if (cache.IsValid)
                 return;
-            
+
             List<string> paths = AssetDatabase.FindAssets("t:Prefab")
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .ToList();
 
-            if (paths.Count == cache.PathCount && paths.All(cache.HasPath)) 
+            if (paths.Count == cache.PathCount && paths.All(cache.HasPath))
                 return;
-            
+
             foreach (string path in paths)
             {
                 var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
