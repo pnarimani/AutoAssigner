@@ -121,6 +121,15 @@ namespace AutoAssigner
 
             foreach (KeyValuePair<Type, List<string>> kvp in _prefabs)
             {
+                if (kvp.Key == null)
+                    continue;
+
+                if (kvp.Value == null)
+                    continue;
+
+                if (kvp.Value.Count == 0)
+                    continue;
+                
                 _prefabsList.Add(new Pair
                 {
                     TypeName = kvp.Key.AssemblyQualifiedName,
@@ -130,10 +139,19 @@ namespace AutoAssigner
 
             foreach (KeyValuePair<string, List<Type>> kvp in _pathLookUp)
             {
+                if (kvp.Key == null)
+                    continue;
+
+                if (kvp.Value == null)
+                    continue;
+
+                if (kvp.Value.Count == 0)
+                    continue;
+                
                 _pathLookupList.Add(new PathLookupPair
                 {
                     Path = kvp.Key,
-                    TypeNames = kvp.Value.Select(x => x.AssemblyQualifiedName).ToList()
+                    TypeNames = kvp.Value.Where(x => x != null).Select(x => x.AssemblyQualifiedName).ToList()
                 });
             }
         }
@@ -147,17 +165,14 @@ namespace AutoAssigner
             {
                 var type = Type.GetType(pair.TypeName);
                 if (type == null)
-                {
-                    Debug.LogError($"[AutoAssigner] Failed to get Type from {pair.TypeName}");
                     continue;
-                }
 
                 _prefabs.Add(type, pair.Paths);
             }
 
             foreach (PathLookupPair pair in _pathLookupList)
             {
-                _pathLookUp.Add(pair.Path, pair.TypeNames.Select(Type.GetType).ToList());
+                _pathLookUp.Add(pair.Path, pair.TypeNames.Select(Type.GetType).Where(t => t != null).ToList());
             }
         }
 
