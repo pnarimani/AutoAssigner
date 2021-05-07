@@ -8,7 +8,7 @@ namespace AutoAssigner.Providers
 {
     internal class PrefabProvider
     {
-        public static Component[] GetAll(Type t)
+        public static List<Component> GetAll(Type t, string targetName)
         {
             ValidateCache();
             
@@ -16,7 +16,9 @@ namespace AutoAssigner.Providers
 
             if (paths == null)
                 return null;
-
+            
+            NameProcessor.CutLowQualityPaths(paths, targetName);
+            
             List<GameObject> all = paths
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(asset => asset != null)
@@ -34,7 +36,7 @@ namespace AutoAssigner.Providers
                     prefabs.Add(c);
             }
 
-            return prefabs.ToArray();
+            return prefabs;
         }
 
         public static Component GetOne(Type t, string targetName)

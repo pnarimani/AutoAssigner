@@ -23,6 +23,7 @@ namespace AutoAssigner.Tests
         [TestCase("888", "888")]
         [TestCase("888hell", "888 hell")]
         [TestCase("Image (1)", "Image (1)")]
+        [TestCase("AKShot", "AK Shot")]
         public void SplitPascalCase(string name, string expected)
         {
             Assert.AreEqual(expected, NameProcessor.SplitPascalCase(name));

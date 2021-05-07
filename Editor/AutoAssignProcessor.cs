@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AutoAssigner.Providers;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
@@ -50,6 +51,11 @@ namespace AutoAssigner
             var root = obj.targetObject as Component;
             bool hasPrefabInName = property.name.Contains("prefab", StringComparison.InvariantCultureIgnoreCase);
 
+            string targetName = typeof(T).Name + " " + property.name;
+
+            if (typeof(ScriptableObject).IsAssignableFrom(typeof(T)))
+                targetName = obj.targetObject.name + " " + targetName;
+            
             if (property.isArray)
             {
                 if (property.arraySize != 0) return;
@@ -61,35 +67,35 @@ namespace AutoAssigner
                 property.DeleteArrayElementAtIndex(0);
                 // Nasty trick over
 
-                if (typeof(ScriptableObject).IsAssignableFrom(element))
+                if (typeof(Component).IsAssignableFrom(element))
                 {
-                    ScriptableObject[] all = ScriptableObjectProvider.GetAll(element);
-                    property.arraySize = all.Length;
+                    List<Component> all;
 
-                    for (var i = 0; i < all.Length; i++)
+                    if (root != null && !hasPrefabInName)
+                    {
+                        all = root.GetComponentsInChildren(element, true).ToList();
+
+                        if (all.Count == 0)
+                            all = PrefabProvider.GetAll(element, targetName);
+                    }
+                    else
+                    {
+                        all = PrefabProvider.GetAll(element, targetName);
+                    }
+
+                    property.arraySize = all.Count;
+
+                    for (int i = 0; i < all.Count; i++)
                     {
                         property.GetArrayElementAtIndex(i).objectReferenceValue = all[i];
                     }
                 }
-                else if (typeof(Component).IsAssignableFrom(element))
+                else if (typeof(Object).IsAssignableFrom(element))
                 {
-                    Component[] all;
-
-                    if (root != null && !hasPrefabInName)
-                    {
-                        all = root.GetComponentsInChildren(element, true);
-
-                        if (all.Length == 0)
-                            all = PrefabProvider.GetAll(element);
-                    }
-                    else
-                    {
-                        all = PrefabProvider.GetAll(element);
-                    }
-
-                    property.arraySize = all.Length;
-
-                    for (int i = 0; i < all.Length; i++)
+                    List<Object> all = ObjectProvider.GetAll(element, targetName);
+                    
+                    property.arraySize = all.Count;
+                    for (var i = 0; i < all.Count; i++)
                     {
                         property.GetArrayElementAtIndex(i).objectReferenceValue = all[i];
                     }
@@ -103,16 +109,7 @@ namespace AutoAssigner
                 if (property.objectReferenceValue != null)
                     return;
 
-                string targetName = typeof(T).Name + " " + property.name;
-
-                if (typeof(ScriptableObject).IsAssignableFrom(typeof(T)))
-                    targetName = obj.targetObject.name + " " + targetName;
-
-                if (typeof(ScriptableObject).IsAssignableFrom(fieldType))
-                {
-                    property.objectReferenceValue = ScriptableObjectProvider.GetOne(fieldType, targetName);
-                }
-                else if (typeof(Component).IsAssignableFrom(fieldType))
+                if (typeof(Component).IsAssignableFrom(fieldType))
                 {
                     if (root != null && !hasPrefabInName)
                     {
@@ -130,6 +127,10 @@ namespace AutoAssigner
                 else if (typeof(GameObject).IsAssignableFrom(fieldType))
                 {
                     property.objectReferenceValue = PrefabProvider.GetOne(targetName);
+                }
+                else if (typeof(Object).IsAssignableFrom(fieldType))
+                {
+                    property.objectReferenceValue = ObjectProvider.GetOne(fieldType, targetName);
                 }
             }
         }
