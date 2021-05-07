@@ -17,7 +17,7 @@ namespace AutoAssigner
         {
             if (Property.GetAttribute<NoAutoAssignAttribute>() != null)
                 return;
-            
+
             memberInfos.AddDelegate("InjectedAutoAssign", () =>
             {
                 if (!GUILayout.Button("Auto Assign")) return;
@@ -40,7 +40,6 @@ namespace AutoAssigner
 
                     serialized.ApplyModifiedProperties();
                 }
-
             }, -100000f, new OnInspectorGUIAttribute("InjectedAutoAssign"));
         }
 
@@ -104,9 +103,14 @@ namespace AutoAssigner
                 if (property.objectReferenceValue != null)
                     return;
 
+                string targetName = typeof(T).Name + " " + property.name;
+
+                if (typeof(ScriptableObject).IsAssignableFrom(typeof(T)))
+                    targetName = obj.targetObject.name + " " + targetName;
+
                 if (typeof(ScriptableObject).IsAssignableFrom(fieldType))
                 {
-                    property.objectReferenceValue = ScriptableObjectProvider.GetOne(fieldType, property.name);
+                    property.objectReferenceValue = ScriptableObjectProvider.GetOne(fieldType, targetName);
                 }
                 else if (typeof(Component).IsAssignableFrom(fieldType))
                 {
@@ -116,16 +120,16 @@ namespace AutoAssigner
 
                         if (children.Length != 0)
                         {
-                            property.objectReferenceValue = NameProcessor.GetMatching(children, property.name);
+                            property.objectReferenceValue = NameProcessor.GetMatching(children, targetName);
                             return;
                         }
                     }
 
-                    property.objectReferenceValue = PrefabProvider.GetOne(fieldType, property.name);
+                    property.objectReferenceValue = PrefabProvider.GetOne(fieldType, targetName);
                 }
                 else if (typeof(GameObject).IsAssignableFrom(fieldType))
                 {
-                    property.objectReferenceValue = PrefabProvider.GetOne(property.name);
+                    property.objectReferenceValue = PrefabProvider.GetOne(targetName);
                 }
             }
         }
