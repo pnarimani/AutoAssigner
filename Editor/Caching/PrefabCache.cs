@@ -5,21 +5,21 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AutoAssigner
+namespace AutoAssigner.Caching
 {
     [Serializable]
     internal class PrefabCache : ISerializationCallbackReceiver
     {
         private static PrefabCache _instance;
 
-        [SerializeField] private List<Pair> _prefabsList = new List<Pair>();
-        [SerializeField] private List<PathLookupPair> _pathLookupList = new List<PathLookupPair>();
+        [SerializeField] private List<Pair> _prefabsList = new();
+        [SerializeField] private List<PathLookupPair> _pathLookupList = new();
 
-        private readonly Dictionary<Type, List<string>> _prefabs = new Dictionary<Type, List<string>>();
-        private readonly Dictionary<string, List<Type>> _pathLookUp = new Dictionary<string, List<Type>>();
+        private readonly Dictionary<Type, List<string>> _prefabs = new();
+        private readonly Dictionary<string, List<Type>> _pathLookUp = new();
 
         private static string LibPath => Path.Combine(
-            Path.GetDirectoryName(Application.dataPath),
+            Path.GetDirectoryName(Application.dataPath) ?? throw new Exception("Could not find the project folder"),
             "Library",
             "AutoAssignPrefabCache.asset"
         );
@@ -37,6 +37,8 @@ namespace AutoAssigner
                 {
                     string json = File.ReadAllText(LibPath);
                     EditorJsonUtility.FromJsonOverwrite(json, _instance);
+                    
+                    _instance.ValidateCache();
                 }
 
                 return _instance;
@@ -44,8 +46,6 @@ namespace AutoAssigner
         }
 
         public int PathCount => _pathLookUp.Count;
-        
-        public bool IsValid { get; set; }
 
         public List<string> AllPaths => _pathLookUp.Keys.ToList();
 
@@ -112,6 +112,32 @@ namespace AutoAssigner
                     RemovePath(t, path);
                 }
             }
+        }
+        
+        private void ValidateCache()
+        {
+            List<string> paths = AssetDatabase.FindAssets("t:Prefab")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToList();
+
+            if (paths.Count == PathCount && paths.All(HasPath))
+                return;
+
+            foreach (string path in paths)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                Component[] all = go.GetComponents<Component>();
+
+                foreach (Component c in all)
+                {
+                    if (c == null)
+                        continue;
+
+                    AddPath(c.GetType(), path);
+                }
+            }
+
+            Save();
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoAssigner.Caching;
+using AutoAssigner.Scoring;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,8 +12,6 @@ namespace AutoAssigner.Providers
     {
         public static List<Component> GetAll(Type t, string targetName)
         {
-            ValidateCache();
-
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
 
             if (paths == null)
@@ -41,8 +41,6 @@ namespace AutoAssigner.Providers
 
         public static Component GetOne(Type t, string targetName)
         {
-            ValidateCache();
-
             List<string> paths = PrefabCache.Instance.GetPrefabs(t);
 
             if (paths == null)
@@ -55,8 +53,6 @@ namespace AutoAssigner.Providers
 
         public static GameObject GetOne(string targetName)
         {
-            ValidateCache();
-
             (Type bestType, int typeScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllTypes, targetName);
             (string bestPath, int pathScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllPaths, targetName);
 
@@ -69,38 +65,6 @@ namespace AutoAssigner.Providers
             }
 
             return AssetDatabase.LoadAssetAtPath<GameObject>(bestPath);
-        }
-
-        private static void ValidateCache()
-        {
-            var cache = PrefabCache.Instance;
-
-            if (cache.IsValid)
-                return;
-
-            List<string> paths = AssetDatabase.FindAssets("t:Prefab")
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .ToList();
-
-            if (paths.Count == cache.PathCount && paths.All(cache.HasPath))
-                return;
-
-            foreach (string path in paths)
-            {
-                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                Component[] all = go.GetComponents<Component>();
-
-                foreach (Component c in all)
-                {
-                    if (c == null)
-                        continue;
-
-                    cache.AddPath(c.GetType(), path);
-                }
-            }
-
-            cache.Save();
-            cache.IsValid = true;
         }
     }
 }

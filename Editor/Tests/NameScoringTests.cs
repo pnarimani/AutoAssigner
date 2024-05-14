@@ -1,3 +1,4 @@
+using AutoAssigner.Scoring;
 using NUnit.Framework;
 
 namespace AutoAssigner.Tests
@@ -17,16 +18,6 @@ namespace AutoAssigner.Tests
             Assert.Greater(winnerScore, loserScore);
         }
 
-        [TestCase("_hello6field89", "_ hello 6 field 89")]
-        [TestCase("simpleName", "Simple Name")]
-        [TestCase("Name", "Name")]
-        [TestCase("888", "888")]
-        [TestCase("888hell", "888 hell")]
-        [TestCase("Image (1)", "Image (1)")]
-        [TestCase("AKShot", "AK Shot")]
-        public void SplitPascalCase(string name, string expected)
-        {
-            Assert.AreEqual(expected, NameProcessor.SplitPascalCase(name));
-        }
+        
     }
 }

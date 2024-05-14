@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using AutoAssigner.Scoring;
 using UnityEditor;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace AutoAssigner.Providers

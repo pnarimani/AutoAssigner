@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace AutoAssigner
+namespace AutoAssigner.Caching
 {
     internal class PrefabCacheProcessor : AssetPostprocessor
     {
@@ -12,8 +12,6 @@ namespace AutoAssigner
             string[] movedAssets,
             string[] movedFromAssetPaths)
         {
-            var cache = PrefabCache.Instance;
-            
             foreach (string imported in importedAssets)
             {
                 if (!imported.EndsWith(".prefab"))
@@ -27,7 +25,7 @@ namespace AutoAssigner
                     if (c == null)
                         continue;
                     
-                    cache.AddPath(c.GetType(), imported);
+                    PrefabCache.Instance.AddPath(c.GetType(), imported);
                 }
             }
 
@@ -36,7 +34,7 @@ namespace AutoAssigner
                 if (!del.EndsWith(".prefab"))
                     continue;
                 
-                cache.RemovePath(del);
+                PrefabCache.Instance.RemovePath(del);
             }
 
             for (int i = 0; i < movedAssets.Length; i++)
@@ -56,12 +54,12 @@ namespace AutoAssigner
                         continue;
                     
                     Type type = c.GetType();
-                    cache.RemovePath(type, from);
-                    cache.AddPath(type, to);
+                    PrefabCache.Instance.RemovePath(type, from);
+                    PrefabCache.Instance.AddPath(type, to);
                 }
             }
             
-            cache.Save();
+            PrefabCache.Instance.Save();
         }
     }
 }

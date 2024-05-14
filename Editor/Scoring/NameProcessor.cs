@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Object = UnityEngine.Object;
 
-namespace AutoAssigner
+namespace AutoAssigner.Scoring
 {
     public class NameProcessor
     {
@@ -65,18 +63,20 @@ namespace AutoAssigner
                 .Replace('.', ' ')
                 .Replace('_', ' ');
 
-            string[] nameParts = SplitPascalCase(name).Split(' ');
-            string[] targetParts = SplitPascalCase(target).Split(' ');
+            string[] nameParts = name.SplitPascalCase().Split(' ');
+            string[] targetParts = target.SplitPascalCase().Split(' ');
 
             foreach (string namePart in nameParts)
             {
                 if (string.IsNullOrWhiteSpace(namePart))
                     continue;
 
-                if (Contains(target, namePart, CompareOptions.Ordinal))
-                    score += 12;
-                if (Contains(target, namePart, CompareOptions.OrdinalIgnoreCase))
-                    score += 10;
+                float multiplier = namePart.Length == 1 ? 0.2f : 1f;
+
+                if (target.Contains(namePart, StringComparison.Ordinal))
+                    score += (int)(12 * multiplier);
+                if (target.Contains(namePart, StringComparison.OrdinalIgnoreCase))
+                    score += (int)(10 * multiplier);
 
                 foreach (string targetPart in targetParts)
                 {
@@ -92,71 +92,15 @@ namespace AutoAssigner
                 if (string.IsNullOrWhiteSpace(targetPart))
                     continue;
 
-                if (Contains(name, targetPart, CompareOptions.Ordinal))
-                    score += 12;
-                else if (Contains(name, targetPart, CompareOptions.OrdinalIgnoreCase))
-                    score += 10;
+                float multiplier = targetPart.Length == 1 ? 0.2f : 1f;
+
+                if (name.Contains(targetPart, StringComparison.Ordinal))
+                    score += (int)(12 * multiplier);
+                else if (name.Contains(targetPart, StringComparison.OrdinalIgnoreCase))
+                    score += (int)(10 * multiplier);
             }
 
             return score;
-        }
-
-        public static bool Contains(string main, string sub, CompareOptions options)
-        {
-            return CultureInfo.InvariantCulture.CompareInfo.IndexOf(main, sub, options) >= 0;
-        }
-
-        public static string SplitPascalCase(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return input;
-
-            input = input.Replace(" ", "");
-
-            if (string.IsNullOrEmpty(input))
-                return input;
-
-            var stringBuilder = new StringBuilder(input.Length);
-
-            stringBuilder.Append(char.IsLetter(input[0]) ? char.ToUpper(input[0]) : input[0]);
-
-            for (int i = 1; i < input.Length; ++i)
-            {
-                char next = char.MinValue;
-                char prev = input[i - 1];
-                char curr = input[i];
-
-                if (i < input.Length - 1)
-                    next = input[i + 1];
-
-                if (char.IsUpper(curr) && (!char.IsUpper(prev) || !char.IsUpper(next)))
-                    stringBuilder.Append(' ');
-                else if (!char.IsLetter(curr) && char.IsLetter(prev))
-                    stringBuilder.Append(' ');
-                else if (char.IsLetter(curr) && !char.IsLetter(prev))
-                    stringBuilder.Append(' ');
-                
-                stringBuilder.Append(curr);
-            }
-
-            return stringBuilder.ToString();
-        }
-
-        public static StringBuilder Reverse(StringBuilder sb)
-        {
-            int end = sb.Length - 1;
-            int start = 0;
-
-            while (end - start > 0)
-            {
-                char t = sb[end];
-                sb[end] = sb[start];
-                sb[start] = t;
-                start++;
-                end--;
-            }
-
-            return sb;
         }
     }
 }

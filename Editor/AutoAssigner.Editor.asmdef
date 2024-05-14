@@ -1,6 +1,6 @@
 {
     "name": "AutoAssigner.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "AutoAssigner",
     "references": [
         "AutoAssigner"
     ],
@@ -9,7 +9,7 @@
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
