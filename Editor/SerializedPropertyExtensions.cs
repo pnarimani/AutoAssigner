@@ -76,5 +76,14 @@ namespace AutoAssigner
                    && property.propertyPath.Contains("[")
                    && property.propertyPath.Contains("]");
         }
+
+        public static object GetObject(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            string path = property.propertyPath;
+            BindingFlags bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            FieldInfo field = obj.GetType().GetField(path, bindings);
+            return field != null ? field.GetValue(obj) : default(object);
+        }
     }
 }
