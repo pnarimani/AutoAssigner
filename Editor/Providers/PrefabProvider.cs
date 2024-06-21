@@ -48,7 +48,8 @@ namespace AutoAssigner.Providers
 
             (string bestPath, _) = NameProcessor.GetMatching(paths, targetName);
 
-            return AssetDatabase.LoadAssetAtPath<GameObject>(bestPath).GetComponent(t);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(bestPath);
+            return prefab != null ? prefab.GetComponent(t) : null;
         }
 
         public static GameObject GetOne(string targetName)

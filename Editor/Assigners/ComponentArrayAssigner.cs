@@ -27,7 +27,8 @@ namespace AutoAssigner.Assigners
 
             List<Component> all;
 
-            if (!property.HasPrefabInTheName())
+            var isComponent = property.serializedObject.targetObject is Component;
+            if (!property.HasPrefabInTheName() && isComponent)
             {
                 var root = (Component)property.serializedObject.targetObject;
                 all = root.GetComponentsInChildren(element, true).ToList();

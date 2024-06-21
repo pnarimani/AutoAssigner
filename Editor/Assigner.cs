@@ -13,6 +13,9 @@ namespace AutoAssigner
             new ObjectAssigner(),
             new ComponentArrayAssigner(),
             new ObjectArrayAssigner(),
+#if UNITY_ADDRESSABLES
+            new AssetReferenceTAssigner(),
+#endif
         };
 
         public static void AssignObjectProperties(SerializedObject obj)
@@ -24,6 +27,7 @@ namespace AutoAssigner
                 {
                     Logger.Log($"Assigning property: {property.propertyPath}");
 
+                    bool assigned = false;
                     foreach (ISubAssigner assigner in _assigners)
                     {
                         using (new Timer($"Assigner `{assigner.GetType().Name}` for `{property.propertyPath}`"))
@@ -31,17 +35,20 @@ namespace AutoAssigner
                             if (assigner.TryAssign(property))
                             {
                                 Logger.Log($"Property `{property.propertyPath}` assigned by {assigner.GetType().Name}");
+                                assigned = true;
                                 break;
                             }
                         }
                     }
 
+                    //because of AssetReferenceTAssigner this function must be called here.
+                    if (assigned)
+                        obj.ApplyModifiedProperties();
+
                     if (!property.NextVisible(true))
                         break;
                 }
             }
-
-            obj.ApplyModifiedProperties();
         }
     }
 }
