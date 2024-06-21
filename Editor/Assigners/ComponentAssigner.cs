@@ -33,13 +33,12 @@ namespace AutoAssigner.Assigners
                 if (children.Length != 0)
                 {
                     (property.objectReferenceValue, _) = NameProcessor.GetMatching(children, property.GetTargetName());
+                    if (property.objectReferenceValue != null)
+                        return true;
                 }
             }
-            else
-            {
-                property.objectReferenceValue = PrefabProvider.GetOne(fieldType, property.GetTargetName());
-            }
 
+            property.objectReferenceValue = PrefabProvider.GetOne(fieldType, property.GetTargetName());
             return true;
         }
     }
