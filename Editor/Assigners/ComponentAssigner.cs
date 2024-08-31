@@ -24,6 +24,8 @@ namespace AutoAssigner.Assigners
             if (property.objectReferenceValue != null)
                 return true;
 
+            var propertyId = property.GetTargetName();
+            
             if (!property.HasPrefabInTheName())
             {
                 var root = (Component)property.serializedObject.targetObject;
@@ -31,12 +33,12 @@ namespace AutoAssigner.Assigners
 
                 if (children.Length != 0)
                 {
-                    (property.objectReferenceValue, _) = NameProcessor.GetMatching(children, property.GetTargetName());
+                    property.objectReferenceValue = NameProcessor.GetMatching(children, propertyId);
                 }
             }
             else
             {
-                property.objectReferenceValue = PrefabProvider.GetOne(fieldType, property.GetTargetName());
+                property.objectReferenceValue = PrefabProvider.GetOne(fieldType, propertyId);
             }
 
             return true;

@@ -10,28 +10,28 @@ namespace AutoAssigner.Providers
 {
     internal class PrefabProvider
     {
-        public static List<Component> GetAll(Type t, string targetName)
+        public static List<Component> GetAll(Type t, PropertyIdentifiers targetName)
         {
-            List<string> paths = PrefabCache.Instance.GetPrefabs(t);
+            var paths = PrefabCache.Instance.GetPrefabs(t);
 
             if (paths == null)
                 return null;
 
             NameProcessor.CutLowQualityPaths(paths, targetName);
 
-            List<GameObject> all = paths
+            var all = paths
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(asset => asset != null)
                 .ToList();
 
             var prefabs = new List<Component>();
 
-            foreach (GameObject o in all)
+            foreach (var o in all)
             {
-                PrefabAssetType type = PrefabUtility.GetPrefabAssetType(o);
+                var type = PrefabUtility.GetPrefabAssetType(o);
                 if (type == PrefabAssetType.MissingAsset || type == PrefabAssetType.NotAPrefab)
                     continue;
-                Component c = o.GetComponent(t);
+                var c = o.GetComponent(t);
                 if (c != null)
                     prefabs.Add(c);
             }
@@ -39,26 +39,26 @@ namespace AutoAssigner.Providers
             return prefabs;
         }
 
-        public static Component GetOne(Type t, string targetName)
+        public static Component GetOne(Type t, PropertyIdentifiers targetName)
         {
-            List<string> paths = PrefabCache.Instance.GetPrefabs(t);
+            var paths = PrefabCache.Instance.GetPrefabs(t);
 
             if (paths == null)
                 return null;
 
-            (string bestPath, _) = NameProcessor.GetMatching(paths, targetName);
+            var (bestPath, _) = NameProcessor.GetMatching(paths, targetName);
 
             return AssetDatabase.LoadAssetAtPath<GameObject>(bestPath).GetComponent(t);
         }
 
-        public static GameObject GetOne(string targetName)
+        public static GameObject GetOne(PropertyIdentifiers targetName)
         {
-            (Type bestType, int typeScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllTypes, targetName);
-            (string bestPath, int pathScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllPaths, targetName);
+            var (bestType, typeScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllTypes, targetName);
+            var (bestPath, pathScore) = NameProcessor.GetMatching(PrefabCache.Instance.AllPaths, targetName);
 
             if (typeScore > pathScore)
             {
-                List<string> paths = PrefabCache.Instance.GetPrefabs(bestType);
+                var paths = PrefabCache.Instance.GetPrefabs(bestType);
 
                 if (paths != null)
                     (bestPath, _) = NameProcessor.GetMatching(paths, targetName);

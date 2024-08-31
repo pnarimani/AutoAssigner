@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -63,11 +64,24 @@ namespace AutoAssigner
         public static bool HasPrefabInTheName(this SerializedProperty property)
             => property.name.Contains("prefab", StringComparison.InvariantCultureIgnoreCase);
 
-        public static string GetTargetName(this SerializedProperty property)
+        public static PropertyIdentifiers GetTargetName(this SerializedProperty property)
         {
-            SerializedObject obj = property.serializedObject;
-            Type serializedObjectType = obj.targetObject.GetType();
-            return $"{obj.targetObject.name} {serializedObjectType.Name} {property.name}";
+            var obj = property.serializedObject;
+            var serializedObjectType = obj.targetObject.GetType();
+            return new PropertyIdentifiers(obj.targetObject.name,serializedObjectType.Name, property.name);
+        }
+
+        private static List<string> GetParentNames(Component component)
+        {
+            var names = new List<string>();
+            var parent = component.transform.parent;
+            while (parent != null)
+            {
+                names.Add(parent.name);
+                parent = parent.parent;
+            }
+
+            return names;
         }
 
         public static bool IsArrayElement(this SerializedProperty property)

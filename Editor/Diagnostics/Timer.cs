@@ -6,9 +6,11 @@ namespace AutoAssigner.Diagnostics
 {
     internal readonly struct Timer : IDisposable
     {
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private readonly string _name;
         private readonly Stopwatch _watch;
         private readonly ProfilerMarker _marker;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
 
         public Timer(string name)
         {

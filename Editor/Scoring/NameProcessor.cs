@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor.Search;
 using Object = UnityEngine.Object;
 
 namespace AutoAssigner.Scoring
@@ -10,7 +11,7 @@ namespace AutoAssigner.Scoring
     {
         private const int MaxDistance = 5;
 
-        public static (string path, int score) GetMatching(IList<string> allPaths, string targetName)
+        public static (string path, long score) GetMatching(IList<string> allPaths, PropertyIdentifiers targetName)
         {
             if (allPaths.Count == 0)
                 return (null, 0);
@@ -21,7 +22,7 @@ namespace AutoAssigner.Scoring
                 .First();
         }
 
-        public static (Type type, int score) GetMatching(IList<Type> allPaths, string targetName)
+        public static (Type type, long score) GetMatching(IList<Type> allPaths, PropertyIdentifiers targetName)
         {
             if (allPaths.Count == 0)
                 return (null, 0);
@@ -32,75 +33,39 @@ namespace AutoAssigner.Scoring
                 .First();
         }
 
-        public static (TO item, int score) GetMatching<TO>(IList<TO> all, string targetName) where TO : Object
+        public static TO GetMatching<TO>(IList<TO> all, PropertyIdentifiers targetName)
+            where TO : Object
         {
             if (all.Count == 0)
-                return (null, 0);
+                return null;
 
-            return all
+            var valueTuples = all
                 .Select(s => (s, GetScore(s.name, targetName)))
-                .OrderByDescending(t => t.Item2)
-                .First();
+                .OrderByDescending(t => t.Item2);
+
+            return valueTuples.First().s;
         }
 
-        public static void CutLowQualityPaths(List<string> paths, string targetName)
+        public static void CutLowQualityPaths(List<string> paths, PropertyIdentifiers targetName)
         {
             paths.Sort((p1, p2) => GetScore(Path.GetFileNameWithoutExtension(p1), targetName)
                 .CompareTo(GetScore(Path.GetFileNameWithoutExtension(p2), targetName)));
-            int top = GetScore(Path.GetFileNameWithoutExtension(paths[paths.Count - 1]), targetName);
+            var top = GetScore(Path.GetFileNameWithoutExtension(paths[^1]), targetName);
             paths.RemoveAll(o => top - GetScore(Path.GetFileNameWithoutExtension(o), targetName) > MaxDistance);
         }
 
-        public static int GetScore(string name, string target)
+        public static long GetScore(string name, PropertyIdentifiers target)
         {
-            int score = 0;
+            long propertyNameScore = 0;
+            FuzzySearch.FuzzyMatch(name, target.PropertyName, ref propertyNameScore);
 
-            name = name.Trim(' ', '_', '.')
-                .Replace('.', ' ')
-                .Replace('_', ' ');
+            long objTypeScore = 0;
+            FuzzySearch.FuzzyMatch(name, target.ObjectType, ref objTypeScore);
 
-            target = target.Trim(' ', '_', '.')
-                .Replace('.', ' ')
-                .Replace('_', ' ');
+            long objNameScore = 0;
+            FuzzySearch.FuzzyMatch(name, target.ObjectName, ref objNameScore);
 
-            string[] nameParts = name.SplitPascalCase().Split(' ');
-            string[] targetParts = target.SplitPascalCase().Split(' ');
-
-            foreach (string namePart in nameParts)
-            {
-                if (string.IsNullOrWhiteSpace(namePart))
-                    continue;
-
-                float multiplier = namePart.Length == 1 ? 0.2f : 1f;
-
-                if (target.Contains(namePart, StringComparison.Ordinal))
-                    score += (int)(12 * multiplier);
-                if (target.Contains(namePart, StringComparison.OrdinalIgnoreCase))
-                    score += (int)(10 * multiplier);
-
-                foreach (string targetPart in targetParts)
-                {
-                    if (namePart.Equals(targetPart, StringComparison.Ordinal))
-                        score += 20;
-                    else if (namePart.Equals(targetPart, StringComparison.OrdinalIgnoreCase))
-                        score += 18;
-                }
-            }
-
-            foreach (string targetPart in targetParts)
-            {
-                if (string.IsNullOrWhiteSpace(targetPart))
-                    continue;
-
-                float multiplier = targetPart.Length == 1 ? 0.2f : 1f;
-
-                if (name.Contains(targetPart, StringComparison.Ordinal))
-                    score += (int)(12 * multiplier);
-                else if (name.Contains(targetPart, StringComparison.OrdinalIgnoreCase))
-                    score += (int)(10 * multiplier);
-            }
-
-            return score;
+            return propertyNameScore * 3 + (long)(objTypeScore * 0.5) + (long)(objNameScore * 0.8);
         }
     }
 }

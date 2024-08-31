@@ -9,7 +9,7 @@ namespace AutoAssigner.Providers
 {
     internal class ObjectProvider
     {
-        public static List<Object> GetAll(Type t, string targetName)
+        public static List<Object> GetAll(Type t, PropertyIdentifiers targetName)
         {
             List<string> paths = AssetDatabase.FindAssets("t:" + t.Name)
                 .Select(AssetDatabase.GUIDToAssetPath)
@@ -22,7 +22,7 @@ namespace AutoAssigner.Providers
                 .ToList();
         }
 
-        public static Object GetOne(Type t, string targetName)
+        public static Object GetOne(Type t, PropertyIdentifiers targetName)
         {
             List<string> paths = AssetDatabase.FindAssets("t:" + t.Name)
                 .Select(AssetDatabase.GUIDToAssetPath)
